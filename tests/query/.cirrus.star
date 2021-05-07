@@ -1,5 +1,4 @@
 load("../../lib.star", "execute")
-load("cirrus", "json")
 
 
 def main(ctx):
