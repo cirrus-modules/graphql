@@ -1,2 +1,1 @@
-# graphql
-Utilities to work with Cirrus CI GraphQL API from Hooks
+## Starlark helpers to query Cirrus CI GraphQL API
