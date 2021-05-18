@@ -5,7 +5,7 @@ in case of a particular issue found it logs:
 
 ```python
 # .cirrus.star
-load("github.com/cirrus-templates/graphql", "rerun_task_if_issue_in_logs")
+load("github.com/cirrus-modules/graphql", "rerun_task_if_issue_in_logs")
 
 def on_task_failed(ctx):
   if ctx.payload.data.task.automaticReRun:
@@ -19,7 +19,7 @@ Here is an example of executing a custom query:
 
 ```python
 # .cirrus.star
-load("github.com/cirrus-templates/graphql", "execute")
+load("github.com/cirrus-modules/graphql", "execute")
 
 def main(ctx):
     response = execute(
