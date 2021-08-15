@@ -69,7 +69,9 @@ def execute(query, variables=None):
     )
 
     if response.status_code != 200:
-        fail("GraphQL call got bad response code {}".format(response.status))
+        print("Bad response code {}".format(response.status_code))
+        print(response.body())
+        fail("GraphQL call got bad response code {}".format(response.status_code))
 
     jsonResponse = response.json()
 
