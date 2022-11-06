@@ -51,6 +51,69 @@ def rerun_task_if_issue_in_logs(task_id, issue_text):
     print("Didn't find any transient issues in logs!")
     return None
 
+def generate_build_number():
+    # Get build ID
+    build_id_raw = env.get("CIRRUS_BUILD_ID")
+    if not build_id_raw:
+        fail("no CIRRUS_BUILD_ID environment variable was found")
+
+    # Resolve repository ID via GraphQL
+    repository_id_raw = execute("""
+    query($buildId: ID!) {
+      build(id: $buildId) {
+        repositoryId
+      }
+    }
+    """, variables={"buildId": build_id_raw})["build"]["repositoryId"]
+    repository_id = int(repository_id_raw)
+
+    # Retrieve latest build number
+    build_number_raw = get_metadata(repository_id, "CIRRUS_BUILD_NUMBER")
+    if not build_number_raw:
+        build_number_raw = "0"
+
+    # Calculate current build number
+    build_number = int(build_number_raw) + 1
+
+    # Set new build number
+    set_metadata(repository_id, "CIRRUS_BUILD_NUMBER", str(build_number))
+
+def get_metadata(repository_id, key):
+    metadata = execute("""
+    query($repositoryId: ID!) {
+      repository(id: $repositoryId) {
+        metadata {
+          key
+          value
+        }
+      }
+    }
+    """, variables={"repositoryId": repository_id})["repository"]["metadata"]
+
+    for metadata_entry in metadata:
+        if metadata_entry["key"] == key:
+            return metadata_entry["value"]
+
+    return None
+
+def set_metadata(repository_id, key, value):
+    execute("""
+        mutation($repositoryId: ID!, $key: String!, $value: String!, $clientMutationId: String!) {
+          repositorySetMetadata(input: {
+            repositoryId: $repositoryId,
+            key: $key,
+            value: $value,
+            clientMutationId: $clientMutationId
+          }) {
+            clientMutationId
+          }
+        }
+    """, variables={
+        "repositoryId": repository_id,
+        "key": key,
+        "value": value,
+        "clientMutationId": "set-metadata-{}".format(repository_id)
+    })
 
 def execute(query, variables=None):
     body = {
